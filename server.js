@@ -2,7 +2,7 @@ const connection = require('./config/connection');
 const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
-const consoleTable = require('console.table');
+const cT = require('console.table');
 
 // connection to database
 connection.connect((err) => {
@@ -98,4 +98,21 @@ const questions = () => {
                 connection.end();
             }
         })
+};
+
+/* ======================================================== View Section ========================================================== */
+
+const renderAllDepartments = () => {
+    const sql = `SELECT department.id AS id, department.name AS department FROM department`;
+
+    connection.query(sql, (err, res) => {
+        if (err) throw err;
+
+        console.log(chalk.greenBright.italic(`============================================================================================`));
+        console.log(`                                   ` + chalk.whiteBright.italic(`All Departments:`));
+        console.log(chalk.green.italic(`============================================================================================`));
+        console.table(res);
+        console.log(chalk.green.italic(`============================================================================================ `));
+        questions();
+    });
 };
