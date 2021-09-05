@@ -24,7 +24,6 @@ const questions = () => {
                 'View All Departments',
                 'View All Roles',
                 'View All Employees',
-                'View All Employees By Manager',
                 'View All Employees By Department',
                 'View Total Department Budgets',
                 'Add A Department',
@@ -54,11 +53,7 @@ const questions = () => {
                 renderAllEmployees();
             }
 
-            if (picks === 'View All Employees By Manager') {
-                renderEmployeesByManager();
-            }
-
-            if (picks === 'View Employees By Department') {
+            if (picks === 'View All Employees By Department') {
                 renderEmployeesByDepartment();
             }
 
@@ -121,16 +116,39 @@ const renderAllRoles = () => {
     console.log(chalk.green.italic(`============================================================================================`));
     console.log(`                                       ` + chalk.redBright.italic(`Actual Employee Roles:`));
     console.log(chalk.green.italic(`============================================================================================`));
-    
+
     const sql = `SELECT role.id, role.title, department.name AS department
                 FROM role
                 INNER JOIN department ON role.department_id = department.id`;
-                connection.query(sql, (err, res) => {
-                    if (err) throw err;
-                    res.forEach((role) => {
-                        console.table(role.title);
-                    });
-                    console.log(chalk.green.italic(`============================================================================================`));
-                    questions();
-                });
+    connection.query(sql, (err, res) => {
+        if (err) throw err;
+        res.forEach((role) => {
+            console.table(role.title);
+        });
+        console.log(chalk.green.italic(`============================================================================================`));
+        questions();
+    });
+};
+
+const renderAllEmployees = () => {
+    let sql = `SELECT employee.id,
+              employee.first_name,
+              employee.last_name,
+              role.title,
+              department.name AS 'department',
+              role.salary
+              FROM employee, role, department
+              WHERE department.id = role.department_id
+              AND role.id = employee.role_id
+              ORDER BY employee.id ASC`;
+
+    connection.query(sql, (err, res) => {
+        if (err) throw err;
+        console.log(chalk.green.italic(`============================================================================================`));
+        console.log(`               ` + chalk.green.italic(`Current Employees:`));
+        console.log(chalk.green.italic(`============================================================================================`));
+        console.table(res);
+        console.log(chalk.green.italic(`============================================================================================`));
+        questions();
+    });
 };
