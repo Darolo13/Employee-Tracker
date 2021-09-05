@@ -556,3 +556,44 @@ const deleteRole = () => {
         });
     });
   };
+
+  const deleteEmployee = () => {
+    let sql = `SELECT employee.id, employee.first_name, employee.last_name FROM employee`;
+
+    connection.query(sql, (err, res) => {
+      if (err) throw err;
+      let employeeNamesArr = [];
+      res.forEach((employee) => {employeeNamesArr.push(`${employee.first_name} ${employee.last_name}`);});
+
+      inquirer
+        .prompt([
+          {
+            name: 'employeeSelection',
+            type: 'list',
+            message: 'Which employee do you want to remove?',
+            choices: employeeNamesArr
+          }
+        ])
+        .then((ans) => {
+          let employeeId;
+
+          res.forEach((employee) => {
+            if (
+              ans.employeeSelection ===
+              `${employee.first_name} ${employee.last_name}`
+            ) {
+              employeeId = employee.id;
+            }
+          });
+
+          let sql = `DELETE FROM employee WHERE employee.id = ?`;
+          connection.query(sql, [employeeId], (err) => {
+            if (err) throw err;
+            console.log(chalk.green.italic(`====================================================================================`));
+            console.log(chalk.redBright(`Employee Successfully Deleted!`));
+            console.log(chalk.green.italic(`====================================================================================`));
+            renderAllEmployees();
+          });
+        });
+    });
+  };
