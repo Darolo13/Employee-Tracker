@@ -3,6 +3,7 @@ const chalk = require('chalk');
 const figlet = require('figlet');
 const inquirer = require('inquirer');
 const cT = require('console.table');
+const validate = require('./js/validate');
 
 // connection to database
 connection.connect((err) => {
@@ -145,7 +146,7 @@ const renderAllEmployees = () => {
     connection.query(sql, (err, res) => {
         if (err) throw err;
         console.log(chalk.green.italic(`============================================================================================`));
-        console.log(`               ` + chalk.green.italic(`Current Employees:`));
+        console.log(`               ` + chalk.redBright.italic(`Current Employees:`));
         console.log(chalk.green.italic(`============================================================================================`));
         console.table(res);
         console.log(chalk.green.italic(`============================================================================================`));
@@ -164,7 +165,7 @@ const renderEmployeesByDepartment = () => {
     connection.query(sql, (err, res) => {
         if (err) throw err;
         console.log(chalk.green.italic(`====================================================================================`));
-        console.log(`                              ` + chalk.green.bold(`Employees by Department:`));
+        console.log(`                              ` + chalk.redBright.italic(`Employees by Department:`));
         console.log(chalk.green.italic(`====================================================================================`));
         console.table(res);
         console.log(chalk.green.italic(`====================================================================================`));
@@ -174,7 +175,7 @@ const renderEmployeesByDepartment = () => {
 
 const renderTotalDepartmentBudgets = () => {
     console.log(chalk.green.italic(`====================================================================================`));
-    console.log(`                              ` + chalk.green.bold(`Total Budget By Department:`));
+    console.log(`                              ` + chalk.redBright.italic(`Total Budget By Department:`));
     console.log(chalk.green.italic(`====================================================================================`));
     const sql = `SELECT department_id AS id, 
                     department.name AS department,
@@ -184,7 +185,31 @@ const renderTotalDepartmentBudgets = () => {
     connection.query(sql, (err, res) => {
         if (err) throw err;
         console.table(res);
-        console.log(chalk.yellow.bold(`====================================================================================`));
+        console.log(chalk.green.italic(`====================================================================================`));
         questions();
     });
+};
+
+/* ======================================================== Add Section ========================================================== */
+
+const addDepartment = () => {
+    inquirer
+        .prompt([
+            {
+                name: 'addDepartment',
+                type: 'input',
+                message: 'Type the name of the new Department.',
+                validate: validate.validateString
+            }
+        ])
+        .then((response) => {
+            let sql = `INSERT INTO department (name) VALUES (?)`;
+            connection.query(sql, response.addDepartment, (err, res) => {
+                if (err) throw err;
+                console.log(``);
+                console.log(chalk.redBright(response.addDepartment + ` Department successfully added!`));
+                console.log(``);
+                renderAllDepartments();
+            });
+        });
 };
