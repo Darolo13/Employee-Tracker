@@ -116,3 +116,21 @@ const renderAllDepartments = () => {
         questions();
     });
 };
+
+const renderAllRoles = () => {
+    console.log(chalk.green.italic(`============================================================================================`));
+    console.log(`                                       ` + chalk.redBright.italic(`Actual Employee Roles:`));
+    console.log(chalk.green.italic(`============================================================================================`));
+    
+    const sql = `SELECT role.id, role.title, department.name AS department
+                FROM role
+                INNER JOIN department ON role.department_id = department.id`;
+                connection.query(sql, (err, res) => {
+                    if (err) throw err;
+                    res.forEach((role) => {
+                        console.table(role.title);
+                    });
+                    console.log(chalk.green.italic(`============================================================================================`));
+                    questions();
+                });
+};
