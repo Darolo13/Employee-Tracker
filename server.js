@@ -213,3 +213,67 @@ const addDepartment = () => {
             });
         });
 };
+
+
+const addRole = () => {
+    const sql = 'SELECT * FROM department'
+    connection.query(sql, (err, res) => {
+        if (err) throw err;
+        let deptArr = [];
+        res.forEach((department) => { deptArr.push(department.name); });
+        deptArr.push('Add Department');
+        inquirer
+            .prompt([
+                {
+                    name: 'depName',
+                    type: 'list',
+                    message: 'Which department is this new role in?',
+                    choices: deptArr
+                }
+            ])
+            .then((res) => {
+                if (res.depName === 'Add Department') {
+                    addDepartment();
+                } else {
+                    addRoleData(res);
+                }
+            });
+
+        const addRoleData = (departmentInfo) => {
+            inquirer
+                .prompt([
+                    {
+                        name: 'newRole',
+                        type: 'input',
+                        message: 'What is the name of the new role?',
+                        validate: validate.validateString
+                    },
+                    {
+                        name: 'salary',
+                        type: 'input',
+                        message: 'What is the salary of this role?',
+                        validate: validate.validateSalary
+                    }
+                ])
+                .then((res) => {
+                    let generatedRole = res.newRole;
+                    let departmentId;
+
+                    response.forEach((department) => {
+                        if (departmentInfo.depName === department.name) { departmentId = department.id; }
+                    });
+
+                    let sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
+                    let Info = [generatedRole, res.salary, departmentId];
+
+                    connection.query(sql, Info, (err) => {
+                        if (err) throw err;
+                        console.log(chalk.green.italic(`====================================================================================`));
+                        console.log(chalk.redBright(`Role Successfully Added!`));
+                        console.log(chalk.green.italic(`====================================================================================`));
+                        renderAllRoles();
+                    });
+                });
+        };
+    });
+};
