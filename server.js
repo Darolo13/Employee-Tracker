@@ -478,3 +478,43 @@ const updateEmployeeManager = () => {
             });
     });
 };
+
+/* ======================================================== Delete Section ========================================================== */
+
+const deleteDepartment = () => {
+    let sql = `SELECT department.id, department.name FROM department`;
+    
+    connection.query(sql, (err, res) => {
+      if (err) throw err;
+      let departmentNamesArr = [];
+      res.forEach((department) => {departmentNamesArr.push(department.name);});
+
+      inquirer
+        .prompt([
+          {
+            name: 'deptSelection',
+            type: 'list',
+            message: 'Which department do you want to delete?',
+            choices: departmentNamesArr
+          }
+        ])
+        .then((ans) => {
+          let departmentId;
+
+          res.forEach((department) => {
+            if (ans.deptSelection === department.name) {
+              departmentId = department.id;
+            }
+          });
+
+          let sql = `DELETE FROM department WHERE department.id = ?`;
+          connection.query(sql, [departmentId], (err) => {
+            if (err) throw err;
+            console.log(chalk.green.italic(`====================================================================================`));
+            console.log(chalk.redBright.italic(`Department Successfully Deleted!`));
+            console.log(chalk.green.italic(`====================================================================================`));
+            renderAllDepartments();
+          });
+        });
+    });
+};
