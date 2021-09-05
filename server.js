@@ -39,8 +39,8 @@ const questions = () => {
             ]
         }
     ])
-        .then((response) => {
-            const { picks } = response;
+        .then((res) => {
+            const { picks } = res;
 
             if (picks === 'View All Departments') {
                 renderAllDepartments();
@@ -76,6 +76,10 @@ const questions = () => {
 
             if (picks === 'Update Employee Role') {
                 updateEmployeeRole();
+            }
+
+            if (picks === 'Update Employee Manager') {
+                updateEmployeeManager();
             }
 
             if (picks === 'Delete Department') {
@@ -202,12 +206,12 @@ const addDepartment = () => {
                 validate: validate.validateString
             }
         ])
-        .then((response) => {
+        .then((res) => {
             let sql = `INSERT INTO department (name) VALUES (?)`;
-            connection.query(sql, response.addDepartment, (err, res) => {
+            connection.query(sql, res.addDepartment, (err, res) => {
                 if (err) throw err;
                 console.log(``);
-                console.log(chalk.redBright(response.addDepartment + ` Department successfully added!`));
+                console.log(chalk.redBright(res.addDepartment + ` Department successfully added!`));
                 console.log(``);
                 renderAllDepartments();
             });
@@ -307,8 +311,8 @@ const addEmployee = () => {
             }
         }
     ])
-        .then(response => {
-            const info = [response.firstName, response.lastName]
+        .then(res => {
+            const info = [res.firstName, res.lastName]
             const roleSql = `SELECT role.id, role.title FROM role`;
             connection.query(roleSql, (err, data) => {
                 if (err) throw err;
@@ -403,18 +407,74 @@ const updateEmployeeRole = () => {
                     });
 
                     let sqls = `UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`;
-                    connection.query(
-                        sqls,
-                        [newTitleId, employeeId],
-                        (err) => {
-                            if (err) throw err;
-                            console.log(chalk.green.italic(`====================================================================================`));
-                            console.log(chalk.redBright.italic(`Employee Role Updated!`));
-                            console.log(chalk.green.italic(`====================================================================================`));
-                            questions();
-                        }
+                    connection.query(sqls, [newTitleId, employeeId], (err) => {
+                        if (err) throw err;
+                        console.log(chalk.green.italic(`====================================================================================`));
+                        console.log(chalk.redBright.italic(`Employee Role Updated!`));
+                        console.log(chalk.green.italic(`====================================================================================`));
+                        questions();
+                    }
                     );
                 });
         });
+    });
+};
+
+const updateEmployeeManager = () => {
+    let sql = `SELECT employee.id, employee.first_name, employee.last_name, employee.manager_id
+               FROM employee`;
+    connection.query(sql, (err, res) => {
+        let employeeNamesArr = [];
+        res.forEach((employee) => { employeeNamesArr.push(`${employee.first_name} ${employee.last_name}`); });
+
+        inquirer
+            .prompt([
+                {
+                    name: 'employeeSelection',
+                    type: 'list',
+                    message: 'Which employee has a new manager?',
+                    choices: employeeNamesArr
+                },
+                {
+                    name: 'newManager',
+                    type: 'list',
+                    message: 'Which manager is the employee going to be reassigned to?',
+                    choices: employeeNamesArr
+                }
+            ])
+            .then((res) => {
+                let employeeId, managerId;
+                res.forEach((employee) => {
+                    if (
+                        res.employeeSelection === `${employee.first_name} ${employee.last_name}`
+                    ) {
+                        employeeId = employee.id;
+                    }
+
+                    if (
+                        res.newManager === `${employee.first_name} ${employee.last_name}`
+                    ) {
+                        managerId = employee.id;
+                    }
+                });
+
+                if (validate.isSame(res.employeeSelection, res.newManager)) {
+                    console.log(chalk.green.italic(`====================================================================================`));
+                    console.log(chalk.redBright.italic(`Invalid Manager Selection!`));
+                    console.log(chalk.green.italic(`====================================================================================`));
+                    questions();
+                } else {
+                    let sql = `UPDATE employee SET employee.manager_id = ? WHERE employee.id = ?`;
+
+                    connection.query(sql, [managerId, employeeId], (err) => {
+                        if (err) throw err;
+                        console.log(chalk.green.italic(`====================================================================================`));
+                        console.log(chalk.redBright.italic(`Employee Manager Updated!`));
+                        console.log(chalk.green.italic(`====================================================================================`));
+                        questions();
+                    }
+                    );
+                }
+            });
     });
 };
