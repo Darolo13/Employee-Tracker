@@ -259,7 +259,7 @@ const addRole = () => {
                     let generatedRole = res.newRole;
                     let departmentId;
 
-                    response.forEach((department) => {
+                    res.forEach((department) => {
                         if (departmentInfo.depName === department.name) { departmentId = department.id; }
                     });
 
@@ -351,4 +351,70 @@ const addEmployee = () => {
                     });
             });
         });
+};
+
+/* ======================================================== Update Section ========================================================== */
+
+const updateEmployeeRole = () => {
+    let sql = `SELECT employee.id, employee.first_name, employee.last_name, role.id AS "role_id"
+                    FROM employee, role, department WHERE department.id = role.department_id AND role.id = employee.role_id`;
+    connection.query(sql, (err, res) => {
+        if (err) throw err;
+        let employeeNamesArr = [];
+        res.forEach((employee) => { employeeNamesArr.push(`${employee.first_name} ${employee.last_name}`); });
+
+        let sql = `SELECT role.id, role.title FROM role`;
+        connection.query(sql, (err, res) => {
+            if (err) throw err;
+            let rolesArr = [];
+            res.forEach((role) => { rolesArr.push(role.title); });
+
+            inquirer
+                .prompt([
+                    {
+                        name: 'employeeOption',
+                        type: 'list',
+                        message: 'Which employee has a new role?',
+                        choices: employeeNamesArr
+                    },
+                    {
+                        name: 'roleSelection',
+                        type: 'list',
+                        message: 'What is the role of the employee?',
+                        choices: rolesArr
+                    }
+                ])
+                .then((selection) => {
+                    let newTitleId, employeeId;
+
+                    res.forEach((role) => {
+                        if (selection.roleSelection === role.title) {
+                            newTitleId = role.id;
+                        }
+                    });
+
+                    res.forEach((employee) => {
+                        if (
+                            selection.employeeOption ===
+                            `${employee.first_name} ${employee.last_name}`
+                        ) {
+                            employeeId = employee.id;
+                        }
+                    });
+
+                    let sqls = `UPDATE employee SET employee.role_id = ? WHERE employee.id = ?`;
+                    connection.query(
+                        sqls,
+                        [newTitleId, employeeId],
+                        (err) => {
+                            if (err) throw err;
+                            console.log(chalk.green.italic(`====================================================================================`));
+                            console.log(chalk.redBright.italic(`Employee Role Updated!`));
+                            console.log(chalk.green.italic(`====================================================================================`));
+                            questions();
+                        }
+                    );
+                });
+        });
+    });
 };
