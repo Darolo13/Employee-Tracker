@@ -264,9 +264,9 @@ const addRole = () => {
                     });
 
                     let sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
-                    let Info = [generatedRole, res.salary, departmentId];
+                    let info = [generatedRole, res.salary, departmentId];
 
-                    connection.query(sql, Info, (err) => {
+                    connection.query(sql, info, (err) => {
                         if (err) throw err;
                         console.log(chalk.green.italic(`====================================================================================`));
                         console.log(chalk.redBright(`Role Successfully Added!`));
@@ -276,4 +276,79 @@ const addRole = () => {
                 });
         };
     });
+};
+
+const addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: "Enter the first name of the employee",
+            validate: inputFirstName => {
+                if (inputFirstName) {
+                    return true;
+                } else {
+                    console.log('Please enter the first name of the employee...');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: "Enter the last name of the employee.",
+            validate: inputLastName => {
+                if (inputLastName) {
+                    return true;
+                } else {
+                    console.log('Please enter the last name of the employee...');
+                    return false;
+                }
+            }
+        }
+    ])
+        .then(response => {
+            const info = [response.firstName, response.lastName]
+            const roleSql = `SELECT role.id, role.title FROM role`;
+            connection.query(roleSql, (err, data) => {
+                if (err) throw err;
+                const roles = data.map(({ id, title }) => ({ name: title, value: id }));
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'role',
+                        message: "What is the role of this employee?",
+                        choices: roles
+                    }
+                ])
+                    .then(roleChoice => {
+                        const role = roleChoice.role;
+                        info.push(role);
+                        const managerSql = `SELECT * FROM employee`;
+                        connection.query(managerSql, (err, data) => {
+                            if (err) throw err;
+                            const managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + " " + last_name, value: id }));
+                            inquirer.prompt([
+                                {
+                                    type: 'list',
+                                    name: 'manager',
+                                    message: "Who's this employee's manager?",
+                                    choices: managers
+                                }
+                            ])
+                                .then(managerChoice => {
+                                    const manager = managerChoice.manager;
+                                    info.push(manager);
+                                    const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                                    VALUES (?, ?, ?, ?)`;
+                                    connection.query(sql, info, (err) => {
+                                        if (err) throw err;
+                                        console.log("Employee has been added!")
+                                        renderAllEmployees();
+                                    });
+                                });
+                        });
+                    });
+            });
+        });
 };
