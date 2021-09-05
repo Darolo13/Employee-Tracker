@@ -171,3 +171,20 @@ const renderEmployeesByDepartment = () => {
         questions();
     });
 };
+
+const renderTotalDepartmentBudgets = () => {
+    console.log(chalk.green.italic(`====================================================================================`));
+    console.log(`                              ` + chalk.green.bold(`Total Budget By Department:`));
+    console.log(chalk.green.italic(`====================================================================================`));
+    const sql = `SELECT department_id AS id, 
+                    department.name AS department,
+                    SUM(salary) AS budget
+                    FROM  role  
+                    INNER JOIN department ON role.department_id = department.id GROUP BY  role.department_id`;
+    connection.query(sql, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        console.log(chalk.yellow.bold(`====================================================================================`));
+        questions();
+    });
+};
