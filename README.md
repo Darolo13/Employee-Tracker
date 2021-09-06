@@ -7,6 +7,7 @@
 * [Features](#features)
 * [Installation](#installation)
 * [Screenshot](#screenshot)
+* [Demo](#demo-video)
 * [Project Status](#project-status)
 * [Room for Improvement](#room-for-improvement)
 
@@ -81,6 +82,9 @@ To use this project, Please use:
 ## Screenshot
 ### Employee-Tracker:
 ![Initial-display](./assets/screenshots/main.png)
+
+## Demo Video
+[Click to play the video!](https://drive.google.com/file/d/11kOaqlchVUIF4YASIk9euvV_16-LB-9j/view?usp=sharing)  
 
 ## Project Status
 Project is: _in progress_
