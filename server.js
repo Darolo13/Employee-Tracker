@@ -239,7 +239,7 @@ const addDepartment = () => {
             connection.query(sql, ans.addDepartment, (err, res) => {
                 if (err) throw err;
                 console.log(chalk.green.italic(`=========================================`));
-                console.log(chalk.redBright.italic(res.addDepartment + ` Department successfully added!`));
+                console.log(chalk.redBright.italic(`Department successfully added!`));
                 console.log(chalk.green.italic(`=========================================`));
                 renderAllDepartments();
             });
